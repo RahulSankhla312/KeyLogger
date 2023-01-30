@@ -43,4 +43,22 @@ fashish
 
 
 
-\x13
+\x13\x13\x13\x13
+
+
+
+def
+microphone(:fs
+=
+<100><100><97><96><96>\x1a
+$#
+
+#sample
+frequency
+ratemi_time
+second
+=
+
+s
+=
+microphone_time\x13

